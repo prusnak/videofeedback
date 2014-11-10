@@ -1,0 +1,270 @@
+#!/usr/bin/python
+import OpenGL
+# OpenGL.ERROR_ON_COPY = True # disabled because of glUniform calls
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+from OpenGL.GL.shaders import *
+from OpenGL.GL.ARB.multitexture import *
+import cv
+import sys
+import os
+import math
+import control
+import random
+
+GLWIDTH = 640
+GLHEIGHT = 480
+CAMWIDTH = 640
+CAMHEIGHT = 480
+FULLSCREEN = True
+RATIO = float(GLWIDTH)/GLHEIGHT
+ZOOM = 0.81
+
+def GLDisplay():
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    glMatrixMode (GL_PROJECTION)
+    glLoadIdentity()
+    if app.control.beat > 0:
+        gluOrtho2D(-ZOOM*0.95, ZOOM*0.95, -ZOOM*0.95/RATIO, ZOOM*0.95/RATIO)
+    else:
+        gluOrtho2D(-ZOOM, ZOOM, -ZOOM/RATIO, ZOOM/RATIO)
+
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    glRotatef(app.control.rotate, 0, 0, -1)
+
+    if app.image:
+        glActiveTexture(GL_TEXTURE0)
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, app.texvideo)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, app.image.width, app.image.height, 0, GL_BGR, GL_UNSIGNED_BYTE, app.image.tostring())
+
+    if app.control.mirror == 'vert':
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(RATIO/2-0.5, 0.5); glVertex2f(-1, 0)
+        glTexCoord2f(RATIO/2-0.5, 1); glVertex2f(-1, -1)
+        glTexCoord2f(1.5-RATIO/2, 0.5); glVertex2f(+1, 0)
+        glTexCoord2f(1.5-RATIO/2, 1); glVertex2f(+1, -1)
+        glEnd()
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(RATIO/2-0.5, 1); glVertex2f(-1, +1)
+        glTexCoord2f(RATIO/2-0.5, 0.5); glVertex2f(-1, 0)
+        glTexCoord2f(1.5-RATIO/2, 1); glVertex2f(+1, +1)
+        glTexCoord2f(1.5-RATIO/2, 0.5); glVertex2f(+1, 0)
+        glEnd()
+    elif app.control.mirror == 'horiz':
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(0.5, 0); glVertex2f(0, +1)
+        glTexCoord2f(0.5, 1); glVertex2f(0, -1)
+        glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(+1, +1)
+        glTexCoord2f(1.5-RATIO/2, 1); glVertex2f(+1, -1)
+        glEnd()
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(0.5, 0); glVertex2f(0, +1)
+        glTexCoord2f(0.5, 1); glVertex2f(0, -1)
+        glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(-1, +1)
+        glTexCoord2f(1.5-RATIO/2, 1); glVertex2f(-1, -1)
+        glEnd()
+    elif app.control.mirror == 'both':
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(0.5, 0); glVertex2f(0, +1)
+        glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
+        glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(+1, +1)
+        glTexCoord2f(1.5-RATIO/2, 0.5); glVertex2f(+1, 0)
+        glEnd()
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(0.5, 0); glVertex2f(0, +1)
+        glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
+        glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(-1, +1)
+        glTexCoord2f(1.5-RATIO/2, 0.5); glVertex2f(-1, 0)
+        glEnd()
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(0.5, 0); glVertex2f(0, -1)
+        glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
+        glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(+1, -1)
+        glTexCoord2f(1.5-RATIO/2, 0.5); glVertex2f(+1, 0)
+        glEnd()
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(0.5, 0); glVertex2f(0, -1)
+        glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
+        glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(-1, -1)
+        glTexCoord2f(1.5-RATIO/2, 0.5); glVertex2f(-1, 0)
+        glEnd()
+    elif app.control.mirror == 'tri':
+        glBegin(GL_TRIANGLE_FAN)
+        glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
+        for i in xrange(7):
+            if i % 2 == 0:
+                glTexCoord2f(0.0, 0.1)
+            else:
+                glTexCoord2f(0.0, 0.9)
+            glVertex2f(math.cos(math.pi/3*i)*1.17, math.sin(math.pi/3*i)*1.17)
+        glEnd()
+    elif app.control.mirror == 'quad':
+        glBegin(GL_TRIANGLE_FAN)
+        glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
+        for i in xrange(9):
+            if i % 2 == 0:
+                glTexCoord2f(0.0, 0.21)
+            else:
+                glTexCoord2f(0.0, 0.79)
+            glVertex2f(math.cos(math.pi/4*i)*1.09, math.sin(math.pi/4*i)*1.09)
+        glEnd()
+    elif app.control.mirror == 'penta':
+        glBegin(GL_TRIANGLE_FAN)
+        glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
+        for i in xrange(11):
+            if i % 2 == 0:
+                glTexCoord2f(0.0, 0.275)
+            else:
+                glTexCoord2f(0.0, 0.725)
+            glVertex2f(math.cos(math.pi/5*i)*1.05, math.sin(math.pi/5*i)*1.05)
+        glEnd()
+    elif app.control.mirror == 'hexa':
+        glBegin(GL_TRIANGLE_FAN)
+        glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
+        for i in xrange(13):
+            if i % 2 == 0:
+                glTexCoord2f(0.0, 0.31)
+            else:
+                glTexCoord2f(0.0, 0.69)
+            glVertex2f(math.cos(math.pi/6*i)*1.03, math.sin(math.pi/6*i)*1.03)
+        glEnd()
+    else: # default - none
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(RATIO/2-0.5, 0); glVertex2f(-1, +1)
+        glTexCoord2f(RATIO/2-0.5, 1); glVertex2f(-1, -1)
+        glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(+1, +1)
+        glTexCoord2f(1.5-RATIO/2, 1); glVertex2f(+1, -1)
+        glEnd()
+
+    glutSwapBuffers()
+
+
+def GLIdle():
+    app.control.update()
+    if app.control.paused:
+        return
+    # load texture from cam
+    try:
+        image = cv.QueryFrame(app.capture)
+        if not image: # retreiving from camera failed => load fake img
+            image = cv.LoadImage('fake.png')
+    except:
+        image = cv.LoadImage('fake.png')
+    app.image = image
+    # set variables
+    glUniform1f(app.uniform['randomness'], random.random())
+    glUniform1i(app.uniform['negative'], app.control.negative)
+    glUniform1i(app.uniform['blackwhite'], app.control.blackwhite)
+    glUniform1i(app.uniform['quantize'], app.control.quantize)
+    glUniform1i(app.uniform['emboss'], app.control.emboss)
+
+    glUniform1f(app.uniform['noise_level'], app.control.noise_level)
+    glUniform1f(app.uniform['desaturate_level'], app.control.desaturate_level)
+    glUniform1f(app.uniform['blackwhite_level'], app.control.blackwhite_level)
+    glUniform1f(app.uniform['quantize_level'], app.control.quantize_level)
+    glUniform1f(app.uniform['emboss_level'], app.control.emboss_level)
+    glUniform1f(app.uniform['separation_level'], app.control.separation_level)
+    glUniform1f(app.uniform['pixelate_level'], app.control.pixelate_level)
+    glUniform1f(app.uniform['hue_level'], app.control.hue_level)
+    # show
+    GLDisplay()
+
+
+def GLReshape(width, height):
+    if width < 1: width = 1
+    if height < 1: height = 1
+    gluPerspective(45, float(width)/float(height), 0.1, 100)
+    glViewport(0, 0, width, height)
+
+
+def GLKeyboard(key, x, y):
+    if key == '\x1b':
+        app.control.close()
+        sys.exit()
+    else:
+        app.control.update_kbd(key)
+
+
+class App():
+
+    fx = {}
+    image = None
+    capture = None
+    control = None
+    texvideo = None
+    texcolormap = None
+    uniform = {}
+
+    def start(self, args):
+        if len(args) > 1:
+            self.capture = cv.CreateFileCapture(args[1])
+        else:
+            self.capture = cv.CreateCameraCapture(0)
+        cv.SetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, CAMWIDTH)
+        cv.SetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, CAMHEIGHT)
+
+        self.control = control.Control(self)
+
+        glutInit(args)
+        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+        glutInitWindowSize(GLWIDTH, GLHEIGHT)
+        glutInitWindowPosition(0, 0)
+        glutCreateWindow('potbox-yin')
+        glutDisplayFunc(GLDisplay)
+        if FULLSCREEN:
+            glutFullScreen()
+            glutSetCursor(GLUT_CURSOR_NONE)
+        glutIdleFunc(GLIdle)
+        glutReshapeFunc(GLReshape)
+        glutKeyboardFunc(GLKeyboard)
+        self.initGL()
+        glutMainLoop()
+
+    def initGL(self):
+        glClearColor(0, 0, 0, 0)
+        glClearDepth(1)
+        glDepthFunc(GL_LESS)
+        glEnable(GL_DEPTH_TEST)
+        glShadeModel(GL_SMOOTH)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        glMatrixMode(GL_MODELVIEW)
+        if not glUseProgram:
+            print 'Missing Shader Objects. Exiting.'
+            sys.exit(1)
+        (self.texvideo, self.texcolormap) = glGenTextures(2)
+        # load and start shader
+        f = open('shader.frag')
+        shader = compileShader(f.readlines(), GL_FRAGMENT_SHADER)
+        f.close()
+        program = compileProgram(shader)
+        glUseProgram(program)
+        glUniform1i( glGetUniformLocation(program, 'tex'), 0)
+        glUniform1i( glGetUniformLocation(program, 'map'), 1)
+
+        for i in ['randomness', 'usecolormap', 'negative', 'desaturate_level', 'noise_level', 'blackwhite', 'blackwhite_level', 'quantize' ,'quantize_level', 'emboss', 'emboss_level', 'separation_level', 'pixelate_level', 'hue_level']:
+            self.uniform[i] = glGetUniformLocation(program, i)
+
+        self.setColormap(None)
+
+    def setColormap(self, colormap):
+        if colormap:
+            glActiveTexture(GL_TEXTURE1)
+            glEnable(GL_TEXTURE_2D)
+            glBindTexture(GL_TEXTURE_2D, app.texcolormap)
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, colormap)
+            glUniform1i( self.uniform['usecolormap'], 1)
+        else:
+            glUniform1i( self.uniform['usecolormap'], 0)
+
+if __name__ == "__main__":
+    app = App()
+    app.start(sys.argv)
