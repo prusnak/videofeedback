@@ -5,49 +5,9 @@ import threading
 import time
 import math
 
-# get list with:
-# pactl list | grep -A2 'Source #' | grep 'Name: ' | cut -d" " -f2
-
-# AUDIO = 'alsa_output.pci-0000_00_1b.0.analog-stereo.monitor'
-# AUDIO = 'alsa_input.pci-0000_00_1b.0.analog-stereo'
-AUDIO = None
-
 MIDI = 3
-# MIDI = None
 
 MIRRORS = ['none', 'vert', 'horiz', 'both', 'tri', 'quad', 'penta']
-
-class AudioThread(threading.Thread):
-
-    def __init__(self, sink):
-        super(AudioThread, self).__init__()
-        self.sink = sink
-        self.freq = 0.0
-        self.amp = 0.0
-        self.active = True
-        global numpy
-        import numpy
-        import numpy.fft
-
-    def run(self):
-        while self.active:
-            buf = self.sink.emit('pull-buffer')
-            raw = struct.unpack(str(len(buf)/2)+'h', buf)
-#            total = 0.0
-#            for i in xrange(len(raw)):
-#                total += min(1.0, abs(1.0*raw[i]/4096))
-#            self.amp = total/len(raw)
-            raw = numpy.log(numpy.abs(numpy.fft.fft(raw))**2)
-            maxi, maxv = 0, 0
-            for i in xrange(128):
-                if raw[i] > maxv:
-                    maxv = raw[i]
-                    maxi = i
-            self.freq = min(1.0, 1.0*maxi/128)
-            time.sleep(0.01)
-
-    def stop(self):
-        self.active = False
 
 class Control():
 
@@ -57,8 +17,9 @@ class Control():
     mirror_idx = 0
     paused = False
     beat = 0
-    raw1 = [0] * 9
-    raw2 = [0] * 9
+    fader = [0] * 9
+    pot = [0] * 9
+    btn = [False] * 9
 
     negative = False
     blackwhite = False
@@ -88,38 +49,19 @@ class Control():
                 pypm.Initialize()
                 self.midi = pypm.Input(MIDI)
             except:
-                pass
-
-        # audio device
-        self.audio = None
-        if AUDIO:
-            try:
-                import pygst
-                pygst.require("0.10")
-                import gst
-                pipeline = gst.parse_launch('pulsesrc device=%s ! audio/x-raw-int ! appsink name=sink' % AUDIO)
-                sink = pipeline.get_by_name('sink')
-                sink.set_property('drop', True)
-                sink.set_property('max-buffers', 1)
-                pipeline.set_state(gst.STATE_PLAYING)
-                self.audio = AudioThread(sink)
-                self.audio.start()
-            except:
-                pass
+                self.midi = None
 
     def close(self):
-        if self.audio:
-            self.audio.stop()
+        pass
 
     def update(self):
+
+        self.rotate += self.rotate_speed
+        if self.beat > 0:
+            self.beat -= 1
+
         if not self.midi:
             return
-
-        if self.audio:
-#            audio = self.audio.amp
-            audio = self.audio.freq
-        else:
-            audio = 0
 
         while self.midi.Poll():
             data = self.midi.Read(1)
@@ -128,12 +70,17 @@ class Control():
             # vertical faders
             for i in xrange(9):
                 if data[0] == 0xb0 and data[1] == 0x03+i and data[3] == 0x00:
-                    self.raw1[i] = data[2] / 127.0
+                    self.fader[i] = data[2] / 127.0
 
             # vertical pots
             for i in xrange(9):
                 if data[0] == 0xb0 and data[1] == 0x0e+i and data[3] == 0x00:
-                    self.raw2[i] = data[2] / 127.0
+                    self.pot[i] = data[2] / 127.0
+
+            # buttons under faders
+            for i in xrange(9):
+                if data[0] == 176 and data[1] == 23 + i and data[2] == 127 and data[3] == 0:
+                    self.btn[i] = True
 
             # buttons near big wheel
             if data[0] == 176 and data[1] == 67 and data[2] == 127 and data[3] == 0:
@@ -154,20 +101,24 @@ class Control():
                 d = (data[2] / 127.0 - 0.5)
                 self.rotate_speed = d * d * d * 32.0
 
-        self.noise_level      = self.raw1[0] *(1.0 - self.raw2[0]) + audio * self.raw2[0]
-        self.desaturate_level = self.raw1[1] *(1.0 - self.raw2[1]) + audio * self.raw2[1]
-        self.blackwhite_level = self.raw1[2] *(1.0 - self.raw2[2]) + audio * self.raw2[2]
-        self.quantize_level   = self.raw1[3] *(1.0 - self.raw2[3]) + audio * self.raw2[3]
-        self.emboss_level     = self.raw1[4] *(1.0 - self.raw2[4]) + audio * self.raw2[4]
-        self.separation_level = self.raw1[5] *(1.0 - self.raw2[5]) + audio * self.raw2[5]
-        self.pixelate_level   = self.raw1[6] *(1.0 - self.raw2[6]) + audio * self.raw2[6]
-        self.hue_level        = self.raw1[7] *(1.0 - self.raw2[7]) + audio * self.raw2[7]
-        self.hue_level       *= 30
-        self.hue_level        = 0.5 - math.cos(self.hue_level)/2.0
+        self.noise_level      = self.fader[0]
+        self.desaturate_level = self.fader[1]
+        self.blackwhite_level = self.fader[2]
+        self.quantize_level   = self.fader[3]
+        self.emboss_level     = self.fader[4]
+        self.separation_level = self.fader[5]
+        self.pixelate_level   = self.fader[6]
+        self.hue_level        = self.fader[7]
+        self.hue_level        = self.hue_level * 2 - 1
 
-        self.rotate += self.rotate_speed
-        if self.beat > 0:
-            self.beat -= 1
+        if self.btn[2]:
+            self.blackwhite = not self.blackwhite
+        if self.btn[3]:
+            self.quantize = not self.quantize
+        if self.btn[4]:
+            self.emboss = not self.emboss
+        self.btn = [False] * 9
+
 
     def update_kbd(self, key):
 
@@ -185,8 +136,29 @@ class Control():
             self.quantize = False
             self.emboss = False
 
-        elif key == '\t':
+        # beat
+        elif key == '\t': # tab
             self.beat = 3
+
+        # mirrors
+        elif key == '1':
+            self.mirror_idx = 1
+            self.mirror = MIRRORS[1]
+        elif key == '2':
+            self.mirror_idx = 2
+            self.mirror = MIRRORS[2]
+        elif key == '3':
+            self.mirror_idx = 3
+            self.mirror = MIRRORS[3]
+        elif key == '4':
+            self.mirror_idx = 4
+            self.mirror = MIRRORS[4]
+        elif key == '5':
+            self.mirror_idx = 5
+            self.mirror = MIRRORS[5]
+        elif key == '6':
+            self.mirror_idx = 6
+            self.mirror = MIRRORS[6]
 
         # filters
         elif key == 'q':

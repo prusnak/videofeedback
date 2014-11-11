@@ -17,8 +17,7 @@ uniform float hue_level;
 
 float random(vec2 p)
 {
-    const vec2 r = vec2(23.1406926327792690, 2.6651441426902251);
-    return fract(mod(123456789.0, randomness + 256.0 * dot(p,r)));
+    return fract(sin(dot(p.xy, vec2(12.9898,78.233))) * 43758.5453 * randomness);
 }
 
 void main()
@@ -83,7 +82,12 @@ void main()
     color = color.rgb*(1.0-noise_level) + vec3(random(texXY))*noise_level;
 
     // apply hue (hack)
-    color = vec3( color.r * (1.0-hue_level) + color.g * hue_level, color.g * (1.0-hue_level) + color.b * hue_level, color.b * (1.0-hue_level) + color.r * hue_level );
+    if (hue_level > 0.0) {
+        color = vec3( color.r * (1.0-hue_level) + color.g * hue_level, color.g * (1.0-hue_level) + color.b * hue_level, color.b * (1.0-hue_level) + color.r * hue_level );
+    }
+    if (hue_level < 0.0) {
+        color = vec3( color.r * (1.0+hue_level) - color.b * hue_level, color.g * (1.0+hue_level) - color.r * hue_level, color.b * (1.0+hue_level) - color.g * hue_level );
+    }
 
     // fill in result
     gl_FragColor.rgb = color;
