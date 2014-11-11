@@ -152,10 +152,11 @@ def GLIdle():
     # load texture from cam
     try:
         image = cv.QueryFrame(app.capture)
-        if not image: # retreiving from camera failed => load fake img
-            image = cv.LoadImage('fake.png')
+        if not image:
+            raise Exception()
     except:
-        image = cv.LoadImage('fake.png')
+        # retreiving from camera failed => load fake img
+        image = cv.LoadImage('data/fake.png')
     app.image = image
     # set variables
     glUniform1f(app.uniform['randomness'], random.random())
@@ -240,7 +241,7 @@ class App():
             sys.exit(1)
         (self.texvideo, self.texcolormap) = glGenTextures(2)
         # load and start shader
-        f = open('shader.frag')
+        f = open('data/shader.frag')
         shader = compileShader(f.readlines(), GL_FRAGMENT_SHADER)
         f.close()
         program = compileProgram(shader)
