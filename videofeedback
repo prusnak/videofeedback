@@ -43,7 +43,7 @@ def GLDisplay():
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, app.image.width, app.image.height, 0, GL_BGR, GL_UNSIGNED_BYTE, app.image.tostring())
 
-    if app.control.mirror == 'vert':
+    if app.control.mirror == 1:
         glBegin(GL_TRIANGLE_STRIP)
         glTexCoord2f(RATIO/2-0.5, 0.5); glVertex2f(-1, 0)
         glTexCoord2f(RATIO/2-0.5, 1); glVertex2f(-1, -1)
@@ -56,7 +56,7 @@ def GLDisplay():
         glTexCoord2f(1.5-RATIO/2, 1); glVertex2f(+1, +1)
         glTexCoord2f(1.5-RATIO/2, 0.5); glVertex2f(+1, 0)
         glEnd()
-    elif app.control.mirror == 'horiz':
+    elif app.control.mirror == 2:
         glBegin(GL_TRIANGLE_STRIP)
         glTexCoord2f(0.5, 0); glVertex2f(0, +1)
         glTexCoord2f(0.5, 1); glVertex2f(0, -1)
@@ -69,7 +69,7 @@ def GLDisplay():
         glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(-1, +1)
         glTexCoord2f(1.5-RATIO/2, 1); glVertex2f(-1, -1)
         glEnd()
-    elif app.control.mirror == 'both':
+    elif app.control.mirror == 3:
         glBegin(GL_TRIANGLE_STRIP)
         glTexCoord2f(0.5, 0); glVertex2f(0, +1)
         glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
@@ -94,7 +94,7 @@ def GLDisplay():
         glTexCoord2f(1.5-RATIO/2, 0); glVertex2f(-1, -1)
         glTexCoord2f(1.5-RATIO/2, 0.5); glVertex2f(-1, 0)
         glEnd()
-    elif app.control.mirror == 'tri':
+    elif app.control.mirror == 4:
         glBegin(GL_TRIANGLE_FAN)
         glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
         for i in xrange(7):
@@ -104,7 +104,7 @@ def GLDisplay():
                 glTexCoord2f(0.0, 0.9)
             glVertex2f(math.cos(math.pi/3*i)*1.17, math.sin(math.pi/3*i)*1.17)
         glEnd()
-    elif app.control.mirror == 'quad':
+    elif app.control.mirror == 5:
         glBegin(GL_TRIANGLE_FAN)
         glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
         for i in xrange(9):
@@ -114,7 +114,7 @@ def GLDisplay():
                 glTexCoord2f(0.0, 0.79)
             glVertex2f(math.cos(math.pi/4*i)*1.09, math.sin(math.pi/4*i)*1.09)
         glEnd()
-    elif app.control.mirror == 'penta':
+    elif app.control.mirror == 6:
         glBegin(GL_TRIANGLE_FAN)
         glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
         for i in xrange(11):
@@ -124,7 +124,7 @@ def GLDisplay():
                 glTexCoord2f(0.0, 0.725)
             glVertex2f(math.cos(math.pi/5*i)*1.05, math.sin(math.pi/5*i)*1.05)
         glEnd()
-    elif app.control.mirror == 'hexa':
+    elif app.control.mirror == 7:
         glBegin(GL_TRIANGLE_FAN)
         glTexCoord2f(0.5, 0.5); glVertex2f(0, 0)
         for i in xrange(13):
@@ -150,14 +150,8 @@ def GLIdle():
     if app.control.paused:
         return
     # load texture from cam
-    try:
-        image = cv.QueryFrame(app.capture)
-        if not image:
-            raise Exception()
-    except:
-        # retreiving from camera failed => load fake img
-        image = cv.LoadImage('data/fake.png')
-    app.image = image
+    if app.capture:
+        app.image = cv.QueryFrame(app.capture)
     # set variables
     glUniform1f(app.uniform['randomness'], random.random())
     glUniform1i(app.uniform['negative'], app.control.negative)
@@ -203,12 +197,22 @@ class App():
     uniform = {}
 
     def start(self, args):
-        if len(args) > 1:
-            self.capture = cv.CreateFileCapture(args[1])
-        else:
-            self.capture = cv.CreateCameraCapture(0)
-        cv.SetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, CAMWIDTH)
-        cv.SetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, CAMHEIGHT)
+
+        try:
+            if len(args) > 1:
+                self.capture = cv.CreateFileCapture(args[1])
+            else:
+                self.capture = cv.CreateCameraCapture(0)
+            cv.SetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, CAMWIDTH)
+            cv.SetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, CAMHEIGHT)
+            image = cv.QueryFrame(app.capture)
+            if not image:
+                raise Exception()
+            print 'Camera found'
+        except:
+            self.capture = None
+            self.image = cv.LoadImage('data/fake.png')
+            print 'Camera not found'
 
         self.control = control.Control(self)
 
@@ -216,7 +220,7 @@ class App():
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
         glutInitWindowSize(GLWIDTH, GLHEIGHT)
         glutInitWindowPosition(0, 0)
-        glutCreateWindow('potbox-yin')
+        glutCreateWindow('videofeedback')
         glutDisplayFunc(GLDisplay)
         if FULLSCREEN:
             glutFullScreen()

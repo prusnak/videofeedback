@@ -5,16 +5,27 @@ import threading
 import time
 import math
 
-MIDI = 3
+class Mirror:
 
-MIRRORS = ['none', 'vert', 'horiz', 'both', 'tri', 'quad', 'penta']
+    def __init__(self, t):
+        self.t = t
+
+    def dec(self):
+        if self.t > 0:
+            self.t -= 1
+
+    def inc(self):
+        if self.t < 7:
+            self.t += 1
+
+    def __eq__(self, a):
+        return self.t == a
 
 class Control():
 
     midi = None
 
-    mirror = 'none'
-    mirror_idx = 0
+    mirror = Mirror(0)
     paused = False
     beat = 0
     fader = [0] * 9
@@ -42,14 +53,20 @@ class Control():
         self.app = app
 
         # midi device
-        self.midi = None
-        if MIDI:
-            try:
-                import pypm
-                pypm.Initialize()
-                self.midi = pypm.Input(MIDI)
-            except:
-                self.midi = None
+        try:
+            import pypm
+            pypm.Initialize()
+            for i in xrange(pypm.CountDevices()):
+                di = pypm.GetDeviceInfo(i)
+                if di[1].startswith('WORLDE') and di[2]:
+                    self.midi = pypm.Input(i)
+                    print 'MIDI Controller found as MIDI device #%d' % i
+                    break
+            else:
+                raise Exception()
+        except:
+            self.midi = None
+            print 'MIDI Controller not found'
 
     def close(self):
         pass
@@ -84,13 +101,9 @@ class Control():
 
             # buttons near big wheel
             if data[0] == 176 and data[1] == 67 and data[2] == 127 and data[3] == 0:
-                if self.mirror_idx > 0:
-                    self.mirror_idx -= 1
-                    self.mirror = MIRRORS[self.mirror_idx]
+                self.mirror.dec()
             if data[0] == 176 and data[1] == 64 and data[2] == 127 and data[3] == 0:
-                if self.mirror_idx < len(MIRRORS) - 1:
-                    self.mirror_idx += 1
-                    self.mirror = MIRRORS[self.mirror_idx]
+                self.mirror.inc()
 
             # big wheel
 #            if data[0] == 0xc0 and data[2] == 0x00 and data[3] == 0x00:
@@ -129,8 +142,7 @@ class Control():
         # reset all effects
         elif key == '`':
             self.app.setColormap(None)
-            self.mirror = 'none'
-            self.mirror_idx = 0
+            self.mirror = Mirror(0)
             self.negative = False
             self.blackwhite = False
             self.quantize = False
@@ -142,23 +154,19 @@ class Control():
 
         # mirrors
         elif key == '1':
-            self.mirror_idx = 1
-            self.mirror = MIRRORS[1]
+            self.mirror = Mirror(1)
         elif key == '2':
-            self.mirror_idx = 2
-            self.mirror = MIRRORS[2]
+            self.mirror = Mirror(2)
         elif key == '3':
-            self.mirror_idx = 3
-            self.mirror = MIRRORS[3]
+            self.mirror = Mirror(3)
         elif key == '4':
-            self.mirror_idx = 4
-            self.mirror = MIRRORS[4]
+            self.mirror = Mirror(4)
         elif key == '5':
-            self.mirror_idx = 5
-            self.mirror = MIRRORS[5]
+            self.mirror = Mirror(5)
         elif key == '6':
-            self.mirror_idx = 6
-            self.mirror = MIRRORS[6]
+            self.mirror = Mirror(6)
+        elif key == '7':
+            self.mirror = Mirror(7)
 
         # filters
         elif key == 'q':
