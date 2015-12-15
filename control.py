@@ -27,7 +27,6 @@ class Control():
 
     mirror = Mirror(0)
     paused = False
-    beat = 0
     fader = [0] * 9
     pot = [0] * 9
     btn = [False] * 9
@@ -74,8 +73,6 @@ class Control():
     def update(self):
 
         self.rotate += self.rotate_speed
-        if self.beat > 0:
-            self.beat -= 1
 
         if not self.midi:
             return
@@ -148,9 +145,8 @@ class Control():
             self.quantize = False
             self.emboss = False
 
-        # beat
         elif key == '\t': # tab
-            self.beat = 3
+            self.negative = not self.negative
 
         # mirrors
         elif key == '1':
@@ -169,27 +165,25 @@ class Control():
             self.mirror = Mirror(7)
 
         # filters
-        elif key == 'q':
-            self.negative = not self.negative
-        elif key == 'w':
+        elif key == 'z':
             self.blackwhite = not self.blackwhite
-        elif key == 'e':
+        elif key == 'x':
             self.quantize = not self.quantize
-        elif key == 'r':
+        elif key == 'c':
             self.emboss = not self.emboss
 
         # colormaps
-        elif key == 'a':
+        elif key == 'q':
             self.app.setColormap(None)
-        elif key == 's':
+        elif key == 'w':
             self.app.setColormap(colormaps.sepia)
-        elif key == 'd':
+        elif key == 'e':
             self.app.setColormap(colormaps.heat)
-        elif key == 'f':
+        elif key == 'r':
             self.app.setColormap(colormaps.xray)
-        elif key == 'g':
+        elif key == 't':
             self.app.setColormap(colormaps.xpro)
-        elif key == 'h':
+        elif key == 'y':
             self.app.setColormap(colormaps.fire)
-        elif key == 'j':
+        elif key == 'u':
             self.app.setColormap(colormaps.sea)

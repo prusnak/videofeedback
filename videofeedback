@@ -27,10 +27,7 @@ def GLDisplay():
 
     glMatrixMode (GL_PROJECTION)
     glLoadIdentity()
-    if app.control.beat > 0:
-        gluOrtho2D(-ZOOM*0.95, ZOOM*0.95, -ZOOM*0.95/RATIO, ZOOM*0.95/RATIO)
-    else:
-        gluOrtho2D(-ZOOM, ZOOM, -ZOOM/RATIO, ZOOM/RATIO)
+    gluOrtho2D(-ZOOM, ZOOM, -ZOOM/RATIO, ZOOM/RATIO)
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()

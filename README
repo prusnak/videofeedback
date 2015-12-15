@@ -4,18 +4,19 @@ key ` - reset all effects
 
 buttons near wheel - mirrors
 
-key Q - negative on/off
-key W - blackwhite on/off (+fader 3)
-key E - quantize on/off (+fader 4)
-key R - emboss on/off (+fader 5)
+key Tab - negative on/off
 
-key A - colormap none
-key S - colormap xray
-key D - colormap heat
-key F - colormap sepia
-key G - colormap xpro
-key H - colormap fire
-key J - colormap sea
+key Q - colormap none
+key W - colormap xray
+key E - colormap heat
+key R - colormap sepia
+key T - colormap xpro
+key Y - colormap fire
+key U - colormap sea
+
+key Z - blackwhite on/off (+fader 3)
+key X - quantize on/off (+fader 4)
+key C - emboss on/off (+fader 5)
 
 fader 1 - noise
 fader 2 - desaturate
