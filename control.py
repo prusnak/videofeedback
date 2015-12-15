@@ -187,3 +187,14 @@ class Control():
             self.app.setColormap(colormaps.fire)
         elif key == 'u':
             self.app.setColormap(colormaps.sea)
+
+        # rotation
+        elif key == '[':
+            self.rotate_speed -= 0.5
+        elif key == ']':
+            self.rotate_speed += 0.5
+        elif key == '\x08':
+            if self.rotate_speed == 0:
+                self.rotate = 0
+            else:
+                self.rotate_speed = 0

@@ -14,6 +14,10 @@ key T - colormap xpro
 key Y - colormap fire
 key U - colormap sea
 
+key [ - rotate left
+key ] - rotate right
+key Backspace - stop rotation
+
 key Z - blackwhite on/off (+fader 3)
 key X - quantize on/off (+fader 4)
 key C - emboss on/off (+fader 5)
