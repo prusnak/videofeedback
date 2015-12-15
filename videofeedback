@@ -152,18 +152,15 @@ def GLIdle():
     # set variables
     glUniform1f(app.uniform['randomness'], random.random())
     glUniform1i(app.uniform['negative'], app.control.negative)
-    glUniform1i(app.uniform['blackwhite'], app.control.blackwhite)
-    glUniform1i(app.uniform['quantize'], app.control.quantize)
-    glUniform1i(app.uniform['emboss'], app.control.emboss)
+    glUniform1f(app.uniform['threshold_level'], app.control.threshold_level or 0.0)
+    glUniform1f(app.uniform['quantize_level'], app.control.quantize_level or 0.0)
+    glUniform1f(app.uniform['emboss_level'], app.control.emboss_level or 0.0)
+    glUniform1f(app.uniform['noise_level'], app.control.noise_level or 0.0)
+    glUniform1f(app.uniform['desaturate_level'], app.control.desaturate_level or 0.0)
+    glUniform1f(app.uniform['separation_level'], app.control.separation_level or 0.0)
+    glUniform1f(app.uniform['pixelate_level'], app.control.pixelate_level or 0.0)
+    glUniform1f(app.uniform['hue_level'], app.control.hue_level or 0.0)
 
-    glUniform1f(app.uniform['noise_level'], app.control.noise_level)
-    glUniform1f(app.uniform['desaturate_level'], app.control.desaturate_level)
-    glUniform1f(app.uniform['blackwhite_level'], app.control.blackwhite_level)
-    glUniform1f(app.uniform['quantize_level'], app.control.quantize_level)
-    glUniform1f(app.uniform['emboss_level'], app.control.emboss_level)
-    glUniform1f(app.uniform['separation_level'], app.control.separation_level)
-    glUniform1f(app.uniform['pixelate_level'], app.control.pixelate_level)
-    glUniform1f(app.uniform['hue_level'], app.control.hue_level)
     # show
     GLDisplay()
 
@@ -180,7 +177,7 @@ def GLKeyboard(key, x, y):
         app.control.close()
         sys.exit()
     else:
-        app.control.update_kbd(key)
+        app.control.update_key(key)
 
 
 class App():
@@ -250,7 +247,7 @@ class App():
         glUniform1i( glGetUniformLocation(program, 'tex'), 0)
         glUniform1i( glGetUniformLocation(program, 'map'), 1)
 
-        for i in ['randomness', 'usecolormap', 'negative', 'desaturate_level', 'noise_level', 'blackwhite', 'blackwhite_level', 'quantize' ,'quantize_level', 'emboss', 'emboss_level', 'separation_level', 'pixelate_level', 'hue_level']:
+        for i in ['randomness', 'usecolormap', 'negative', 'desaturate_level', 'noise_level', 'threshold_level', 'quantize_level', 'emboss_level', 'separation_level', 'pixelate_level', 'hue_level']:
             self.uniform[i] = glGetUniformLocation(program, i)
 
         self.setColormap(None)
