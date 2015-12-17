@@ -13,20 +13,20 @@ class Control():
 
     def reset(self):
         self.paused = False
-        self.mirror = None
-        self.rotate = 0
-        self.rotate_speed = 0
+        self.mirror = 0
+        self.zoom_freq = 0.0
+        self.rotate = 0.0
+        self.rotate_speed = 0.0
         self.negative = False
         self.modeselektor = None
-        self.threshold_level = None
-        self.quantize_level = None
-        self.emboss_level = None
-        self.noise_level = None
-        self.desaturate_level = None
-        self.separation_level = None
-        self.pixelate_level = None
-        self.hue_level = None
-        self.zoom_freq = None
+        self.threshold_level = 0.0
+        self.quantize_level = 0.0
+        self.emboss_level = 0.0
+        self.noise_level = 0.0
+        self.desaturate_level = 0.0
+        self.separation_level = 0.0
+        self.pixelate_level = 0.0
+        self.hue_level = 0.0
 
     def close(self):
         pass
@@ -77,7 +77,7 @@ class Control():
         if self.modeselektor is not None and key in '`1234567890':
 
             if key == '`':
-                value = None
+                value = 0
             elif key == '0':
                 value = 10
             else:
@@ -90,7 +90,7 @@ class Control():
 
             # colormap
             if self.modeselektor == 'c':
-                if value is None:
+                if value == 0:
                     self.app.setColormap(None)
                 elif value == 1:
                     self.app.setColormap(colormaps.sepia)
@@ -109,41 +109,38 @@ class Control():
 
             # threshold
             if self.modeselektor == 't':
-                self.threshold_level = 0.1 * value if value is not None else None
+                self.threshold_level = 0.1 * value
 
             # quantize
             if self.modeselektor == 'q':
-                self.quantize_level = 0.1 * value if value is not None else None
+                self.quantize_level = 0.1 * value
 
             # emboss
             if self.modeselektor == 'e':
-                self.emboss_level = 0.1 * value if value is not None else None
+                self.emboss_level = 0.1 * value
 
             # noise
             if self.modeselektor == 'n':
-                self.noise_level = 0.1 * value if value is not None else None
+                self.noise_level = 0.1 * value
 
             # desaturate
             if self.modeselektor == 'd':
-                self.desaturate_level = 0.1 * value if value is not None else None
+                self.desaturate_level = 0.1 * value
 
             # separation
             if self.modeselektor == 's':
-                self.separation_level = 0.1 * value if value is not None else None
+                self.separation_level = 0.1 * value
 
             # pixelate
             if self.modeselektor == 'p':
-                self.pixelate_level = 0.1 * value if value is not None else None
+                self.pixelate_level = 0.1 * value
 
             # hue
             if self.modeselektor == 'h':
-                self.hue_level = (0.2 * value - 1.0) if value is not None else None
+                self.hue_level = (0.2 * value - 1.0) if value > 0 else 0.0
 
             if self.modeselektor == 'z':
-                if value:
-                    self.zoom_freq = (80 + value * 10) / 60.0 / 4.0
-                else:
-                    self.zoom_freq = None
+                self.zoom_freq = ((80 + value * 10) / 60.0 / 4.0) if value > 0 else 0.0
 
             self.modeselektor = None
             return

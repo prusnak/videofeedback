@@ -29,7 +29,7 @@ def GLDisplay():
     glMatrixMode (GL_PROJECTION)
     glLoadIdentity()
     zoom = ZOOM
-    if app.control.zoom_freq is not None:
+    if app.control.zoom_freq > 0.0:
         zoom = zoom * (1.0 + math.sin(2.0 * math.pi * app.control.zoom_freq * time.time()) * 0.05)
     gluOrtho2D(-zoom, zoom, -zoom/RATIO, zoom/RATIO)
 
@@ -135,7 +135,7 @@ def GLDisplay():
                 glTexCoord2f(0.0, 0.69)
             glVertex2f(math.cos(math.pi/6*i)*1.03, math.sin(math.pi/6*i)*1.03)
         glEnd()
-    else: # default - none
+    else: # default - 0 / None
         glBegin(GL_TRIANGLE_STRIP)
         glTexCoord2f(RATIO/2-0.5, 0); glVertex2f(-1, +1)
         glTexCoord2f(RATIO/2-0.5, 1); glVertex2f(-1, -1)
@@ -156,14 +156,14 @@ def GLIdle():
     # set variables
     glUniform1f(app.uniform['randomness'], random.random())
     glUniform1i(app.uniform['negative'], app.control.negative)
-    glUniform1f(app.uniform['threshold_level'], app.control.threshold_level or 0.0)
-    glUniform1f(app.uniform['quantize_level'], app.control.quantize_level or 0.0)
-    glUniform1f(app.uniform['emboss_level'], app.control.emboss_level or 0.0)
-    glUniform1f(app.uniform['noise_level'], app.control.noise_level or 0.0)
-    glUniform1f(app.uniform['desaturate_level'], app.control.desaturate_level or 0.0)
-    glUniform1f(app.uniform['separation_level'], app.control.separation_level or 0.0)
-    glUniform1f(app.uniform['pixelate_level'], app.control.pixelate_level or 0.0)
-    glUniform1f(app.uniform['hue_level'], app.control.hue_level or 0.0)
+    glUniform1f(app.uniform['threshold_level'], app.control.threshold_level)
+    glUniform1f(app.uniform['quantize_level'], app.control.quantize_level)
+    glUniform1f(app.uniform['emboss_level'], app.control.emboss_level)
+    glUniform1f(app.uniform['noise_level'], app.control.noise_level)
+    glUniform1f(app.uniform['desaturate_level'], app.control.desaturate_level)
+    glUniform1f(app.uniform['separation_level'], app.control.separation_level)
+    glUniform1f(app.uniform['pixelate_level'], app.control.pixelate_level)
+    glUniform1f(app.uniform['hue_level'], app.control.hue_level)
 
     # show
     GLDisplay()
