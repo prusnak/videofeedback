@@ -8,56 +8,60 @@ python-opencv
 python-opengl
 ```
 
+Keyboard layout
+---------------
+
+
 ![keyboard](keyboard-layout.png)
 
-Common
-------
+Common controls
+----------------
 
 | key | desc |
 |-----|---------|
-| Space  | pause |
-| Delete | reset all |
-| Tab    | invert |
+| `Space`  | Pause |
+| `Delete` | Reset All |
+| `Tab`    | Invert |
 
-Rotation
---------
+Rotation controls
+-----------------
 
 | key | desc |
 |-----|---------|
-| [ | rotate left |
-| ] | rotate right |
-| Enter | change rotation direction |
-| Backspace | stop rotation, reset rotation |
+| `[` | Rotate Left |
+| `]` | Rotate Right |
+| `Enter` | Change Rotation Direction |
+| `Backspace` | First press: Stop Rotation, Second press: Reset Rotation |
 
-Effects
--------
+Effects controls
+----------------
 
 Press letter first, then set amount of effect:
 
 | key | desc |
 |-----|---------|
-| ` | effect off |
-| 1 | 10% effect |
-| 2 | 20% effect |
-| 3 | 30% effect |
-| 4 | 40% effect |
-| 5 | 50% effect |
-| 6 | 60% effect |
-| 7 | 70% effect |
-| 8 | 80% effect |
-| 9 | 90% effect |
-| 0 | 100% effect |
+| `~` | Effect Off |
+| `1` | 10% Effect |
+| `2` | 20% Effect |
+| `3` | 30% Effect |
+| `4` | 40% Effect |
+| `5` | 50% Effect |
+| `6` | 60% Effect |
+| `7` | 70% Effect |
+| `8` | 80% Effect |
+| `9` | 90% Effect |
+| `0` | 100% Effect |
 
 | key | desc |
 |-----|---------|
-| M | mirror (7 is max) |
-| C | colormap (7 is max) |
-| T | blackwhite threshold |
-| Q | quantize |
-| E | emboss |
-| N | noise |
-| D | desaturate |
-| S | separation |
-| P | pixelate |
-| H | hue |
-| Z | pulsating zoom |
+| `M` | Mirror (7 is max) |
+| `C` | Colormap (7 is max) |
+| `T` | Threshold |
+| `Q` | Quantize |
+| `E` | Emboss |
+| `N` | Noise |
+| `D` | Desaturate |
+| `S` | RGB Separation |
+| `P` | Pixelate |
+| `H` | Hue |
+| `Z` | Pulsating Zoom |
