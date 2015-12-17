@@ -14,12 +14,14 @@ uniform float hue_level;
 
 float random(vec2 p)
 {
-    return fract(sin(dot(p.xy, vec2(12.9898,78.233))) * 43758.5453 * randomness);
+    const vec2 r = vec2(23.1406926327792690, 2.6651441426902251);
+    return fract(cos(mod(123456789.0, 1e-7 + 256.0 * dot(p,r) + randomness)));
 }
 
 void main()
 {
     vec2 texXY = gl_TexCoord[0].xy;
+
     if (pixelate_level > 0.0) {
         texXY *= 100.0;
         texXY = vec2(floor(texXY.x / pixelate_level / 5.0) * pixelate_level * 5.0, floor(texXY.y / pixelate_level / 5.0 ) * pixelate_level * 5.0);
