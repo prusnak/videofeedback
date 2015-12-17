@@ -12,6 +12,7 @@ import os
 import math
 import control
 import random
+import time
 
 GLWIDTH = 640
 GLHEIGHT = 480
@@ -27,7 +28,10 @@ def GLDisplay():
 
     glMatrixMode (GL_PROJECTION)
     glLoadIdentity()
-    gluOrtho2D(-ZOOM, ZOOM, -ZOOM/RATIO, ZOOM/RATIO)
+    zoom = ZOOM
+    if app.control.zoom_freq is not None:
+        zoom = zoom * (1.0 + math.sin(2.0 * math.pi * app.control.zoom_freq * time.time()) * 0.05)
+    gluOrtho2D(-zoom, zoom, -zoom/RATIO, zoom/RATIO)
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
@@ -239,9 +243,8 @@ class App():
             sys.exit(1)
         (self.texvideo, self.texcolormap) = glGenTextures(2)
         # load and start shader
-        f = open('data/shader.frag')
-        shader = compileShader(f.readlines(), GL_FRAGMENT_SHADER)
-        f.close()
+        with open('data/shader.frag') as f:
+            shader = compileShader(f.readlines(), GL_FRAGMENT_SHADER)
         program = compileProgram(shader)
         glUseProgram(program)
         glUniform1i( glGetUniformLocation(program, 'tex'), 0)

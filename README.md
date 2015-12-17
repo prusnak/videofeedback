@@ -1,6 +1,13 @@
 Videofeedback
 =============
 
+The following Python packages are needed:
+
+```
+python-opencv
+python-opengl
+```
+
 ![keyboard](keyboard-layout.png)
 
 Common
@@ -44,7 +51,7 @@ Press letter first, then set amount of effect:
 | key | desc |
 |-----|---------|
 | M | mirror (7 is max) |
-| C | colormap (6 is max) |
+| C | colormap (7 is max) |
 | T | blackwhite threshold |
 | Q | quantize |
 | E | emboss |
@@ -53,3 +60,4 @@ Press letter first, then set amount of effect:
 | S | separation |
 | P | pixelate |
 | H | hue |
+| Z | pulsating zoom |

@@ -26,6 +26,7 @@ class Control():
         self.separation_level = None
         self.pixelate_level = None
         self.hue_level = None
+        self.zoom_freq = None
 
     def close(self):
         pass
@@ -68,7 +69,7 @@ class Control():
             return
 
         # effects
-        if key in 'mctqendsph':
+        if key in 'mctqendsphz':
             self.modeselektor = key
             return
 
@@ -100,8 +101,10 @@ class Control():
                 elif value == 4:
                     self.app.setColormap(colormaps.xpro)
                 elif value == 5:
-                    self.app.setColormap(colormaps.fire)
+                    self.app.setColormap(colormaps.yellowblue)
                 elif value == 6:
+                    self.app.setColormap(colormaps.fire)
+                elif value == 7:
                     self.app.setColormap(colormaps.sea)
 
             # threshold
@@ -135,6 +138,12 @@ class Control():
             # hue
             if self.modeselektor == 'h':
                 self.hue_level = (0.2 * value - 1.0) if value is not None else None
+
+            if self.modeselektor == 'z':
+                if value:
+                    self.zoom_freq = (80 + value * 10) / 60.0 / 4.0
+                else:
+                    self.zoom_freq = None
 
             self.modeselektor = None
             return
