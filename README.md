@@ -8,9 +8,13 @@ python-opencv
 python-opengl
 ```
 
+Examples
+--------
+
+![example1](examples/1.jpg) ![example2](examples/2.jpg) ![example3](examples/3.jpg) ![example4](examples/4.jpg) ![example5](examples/5.jpg) ![example6](examples/6.jpg)
+
 Keyboard layout
 ---------------
-
 
 ![keyboard](keyboard-layout.png)
 
