@@ -1,9 +1,5 @@
 import colormaps
-import random
-import struct
-import threading
-import time
-import math
+
 
 class Control():
 
